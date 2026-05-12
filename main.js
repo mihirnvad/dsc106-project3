@@ -459,3 +459,5 @@ function buildTrendChart(data, metric, colorScale) {
 function formatMetric(value, metric) {
   return metric === "bright_pixel_ratio" ? formatPercent(value) : formatBrightness(value);
 }
+
+// test for commit change
