@@ -13,7 +13,8 @@
       <div>
         <h1 id="page-title">Has the growth of cities erased natural darkness in the US?</h1>
         <p class="intro">
-            NASA nighttime images from 2013-2026 filtered to the US processed into pixel-level brightness metrics where each dot represents one quarter of a year.
+          NASA nighttime images from 2013-2026 filtered to the US and processed into
+          quarterly pixel-level brightness metrics.
         </p>
       </div>
     </section>
@@ -85,6 +86,69 @@
         </div>
       </div>
       <div id="trend-chart" aria-label="Line chart of quarterly nighttime light"></div>
+    </section>
+
+    <section class="writeup" aria-labelledby="writeup-title">
+      <h2 id="writeup-title">Design Rationale and Development Process</h2>
+
+      <article>
+        <h3>Compelling Question</h3>
+        <p>
+          The project asks a simple question: are US nights getting brighter over time? The chart
+          focuses on quarterly summaries from 2013 to early 2026 so it is easier to compare long-term
+          change with seasonal patterns.
+        </p>
+      </article>
+
+      <article>
+        <h3>Data Transformations</h3>
+        <p>
+          NASA nighttime images were filtered to the United States and grouped by quarter. Each row
+          stores mean brightness, maximum brightness, sampled days, and bright-pixel ratio. Bright
+          pixels are pixels above 0.35, so the ratio means "what share of the image is bright enough
+          to count as nighttime glow."
+        </p>
+      </article>
+
+      <article>
+        <h3>Visual Encodings</h3>
+        <p>
+          Rings represent years, moving outward over time. The four directions represent the four
+          quarters. Bigger dots mean a larger bright-pixel ratio. Color shows the selected metric:
+          either mean brightness or bright-pixel ratio. The line chart below gives a regular
+          left-to-right view of the same data.
+        </p>
+      </article>
+
+      <article>
+        <h3>Interaction Design</h3>
+        <p>
+          The slider and Play button show how brightness changes year by year. Show all reveals the
+          whole dataset at once. The color menu lets viewers compare two measures, and the quarter
+          menu isolates one season. Hovering gives exact values without adding labels to every dot.
+        </p>
+      </article>
+
+      <article>
+        <h3>Alternatives Considered</h3>
+        <p>
+          A line chart alone was easier to read over time, but it hid the repeating seasonal pattern.
+          A map was also considered, but the final data is already aggregated for the US, so a map
+          would suggest location detail that is not actually present. The final design combines the
+          radial seasonal view with a simple trend chart.
+        </p>
+      </article>
+
+      <article>
+        <h3>Development Process</h3>
+        <p>
+          The work started in notebooks, where the imagery was converted into the quarterly CSV used
+          by the page. The D3 work then added the radial chart, controls, tooltip, side summary, and
+          trend chart. The hardest parts were choosing a clear radial layout and tuning the page
+          spacing. Total time was about 18-22 people-hours across data prep, coding, design, and
+          writeup.
+        </p>
+      </article>
     </section>
   </main>
 

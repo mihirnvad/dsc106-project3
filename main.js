@@ -1,5 +1,6 @@
 const width = 880;
-const height = 880;
+const height = 960;
+const radialCenterY = 390;
 const margin = { top: 42, right: 36, bottom: 52, left: 60 };
 const quarterNames = new Map([
   [1, "Jan-Mar"],
@@ -37,9 +38,9 @@ const svg = d3
 
 const radialLayer = svg
   .append("g")
-  .attr("transform", `translate(${width / 2}, ${height / 2 - 32})`);
+  .attr("transform", `translate(${width / 2}, ${radialCenterY})`);
 
-const timelineLayer = svg.append("g").attr("transform", `translate(96, ${height - 92})`);
+const timelineLayer = svg.append("g").attr("transform", `translate(34, ${height - 130})`);
 
 const trendSvg = d3
   .select("#trend-chart")
@@ -513,20 +514,20 @@ function getQuarterAverages(rows) {
 }
 
 function buildMiniTimeline(rows) {
-  const timelineWidth = width - 192;
-  const timelineHeight = 44;
-  const axisWidth = 42;
+  const timelineWidth = width - 64;
+  const timelineHeight = 86;
+  const axisWidth = 58;
   const xScale = d3
     .scaleBand()
     .domain(rows.map((d) => d.year))
     .range([axisWidth, timelineWidth])
-    .padding(0.28);
+    .padding(0.18);
   const yScale = d3
     .scaleLinear()
     .range([timelineHeight, 0]);
 
-  const title = timelineLayer.append("text").attr("class", "mini-timeline-title").attr("x", 0).attr("y", -12);
-  const yAxis = timelineLayer.append("g").attr("class", "mini-y-axis").attr("transform", `translate(${axisWidth - 8}, 0)`);
+  const title = timelineLayer.append("text").attr("class", "mini-timeline-title").attr("x", 0).attr("y", -22);
+  const yAxis = timelineLayer.append("g").attr("class", "mini-y-axis").attr("transform", `translate(${axisWidth - 12}, 0)`);
   const grid = timelineLayer.append("g").attr("class", "mini-grid");
 
   timelineLayer
@@ -544,7 +545,7 @@ function buildMiniTimeline(rows) {
     .attr("class", "mini-year-bar")
     .attr("x", (d) => xScale(d.year))
     .attr("width", xScale.bandwidth())
-    .attr("rx", 3);
+    .attr("rx", 4);
 
   const labels = timelineLayer
     .selectAll(".mini-year-label")
@@ -552,7 +553,7 @@ function buildMiniTimeline(rows) {
     .join("text")
     .attr("class", "mini-year-label")
     .attr("x", (d) => xScale(d.year) + xScale.bandwidth() / 2)
-    .attr("y", timelineHeight + 17)
+    .attr("y", timelineHeight + 21)
     .attr("text-anchor", "middle")
     .text((d) => d.year);
 
@@ -664,60 +665,37 @@ function updateBrightnessSummary(rows, metric, allYears = false) {
 }
 
 function updateLegend(scale, metric) {
-  const legendWidth = 260;
-  const swatchHeight = 12;
-  const swatchGap = 4;
   const config = metricConfig[metric];
   const colors = scale.range();
   const [domainMin, domainMax] = scale.domain();
-  const tickValues = [domainMin, ...scale.thresholds(), domainMax];
-  const swatchWidth = (legendWidth - swatchGap * (colors.length - 1)) / colors.length;
-  const boundaryScale = d3.scaleLinear().domain([domainMin, domainMax]).range([0, legendWidth]);
+  const thresholds = scale.thresholds();
+  const ranges = colors.map((color, i) => ({
+    color,
+    start: i === 0 ? domainMin : thresholds[i - 1],
+    end: i === colors.length - 1 ? domainMax : thresholds[i],
+  }));
 
   const legend = d3.select("#color-legend").html("");
-  const svgLegend = legend
-    .append("svg")
-    .attr("viewBox", [0, 0, legendWidth, 78])
-    .attr("aria-label", `${config.label} color scale`);
+  legend.append("p").attr("class", "legend-title").text(config.label);
 
-  svgLegend
-    .selectAll(".legend-swatch")
-    .data(colors)
-    .join("rect")
-    .attr("class", "legend-swatch")
-    .attr("x", (_, i) => i * (swatchWidth + swatchGap))
-    .attr("y", 10)
-    .attr("width", swatchWidth)
-    .attr("height", swatchHeight)
-    .attr("rx", 3)
-    .attr("fill", (d) => d);
+  const rows = legend
+    .append("div")
+    .attr("class", "legend-ranges")
+    .selectAll(".legend-range")
+    .data(ranges)
+    .join("div")
+    .attr("class", "legend-range");
 
-  svgLegend
-    .append("text")
-    .attr("x", 0)
-    .attr("y", 42)
-    .text(config.lowLabel);
+  rows.append("span").attr("class", "legend-chip").style("background", (d) => d.color);
+  rows
+    .append("span")
+    .attr("class", "legend-range-label")
+    .text((d) => `${formatMetric(d.start, metric)} to ${formatMetric(d.end, metric)}`);
 
-  svgLegend
-    .append("text")
-    .attr("x", legendWidth)
-    .attr("y", 42)
-    .attr("text-anchor", "end")
-    .text(config.highLabel);
-
-  svgLegend
-    .selectAll(".legend-tick")
-    .data(tickValues)
-    .join("text")
-    .attr("class", "legend-tick")
-    .attr("x", (d) => boundaryScale(d))
-    .attr("y", 68)
-    .attr("text-anchor", (d, i) => {
-      if (i === 0) return "start";
-      if (i === tickValues.length - 1) return "end";
-      return "middle";
-    })
-    .text((d) => formatMetric(d, metric));
+  legend
+    .append("div")
+    .attr("class", "legend-endpoints")
+    .html(`<span>${config.lowLabel}</span><span>${config.highLabel}</span>`);
 }
 
 function buildTrendChart(data, metric, colorScale) {
