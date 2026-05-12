@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Urban Heartbeat</title>
+  <title>Urban Brightness</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 </head>
@@ -11,22 +11,11 @@
   <main>
     <section class="hero" aria-labelledby="page-title">
       <div>
-        <h1 id="page-title">United States' Urban Glow</h1>
+        <h1 id="page-title">Has the growth of cities erased natural darkness in the US?</h1>
         <p class="intro">
-          Each dot represents a quarterly average of nighttime light intensity, built from monthly
-          samples and random daily image samples.
+            NASA nighttime images from 2013-2026 filtered to the US processed into pixel-level brightness metrics where each dot represents one quarter of a year.
         </p>
       </div>
-      <dl class="stats" aria-label="Dataset summary">
-        <div>
-          <dt>Years</dt>
-          <dd id="stat-years">--</dd>
-        </div>
-        <div>
-          <dt>Quarters</dt>
-          <dd id="stat-quarters">--</dd>
-        </div>
-      </dl>
     </section>
 
     <section class="panel" aria-labelledby="viz-title">
@@ -34,9 +23,10 @@
         <div>
           <h2 id="viz-title">Quarterly Light Pulse</h2>
           <p>
-            Rings move outward by year. The selected year is emphasized while earlier years remain as
-            context and future years fade back.
-          </p>
+            Each dot represents one quarter year average (53 quarters): rings move outward by year.  <br>
+            Bright pixel ratio = percentage of image pixels bright enough to count as nighttime glow (> 0.35). <br>
+            Select dot and color for context.      
+        </p>
         </div>
         <div class="controls" aria-label="Visualization controls">
           <button id="play-button" type="button" aria-label="Play animation">Play</button>
@@ -77,7 +67,7 @@
             <h3>Encoding</h3>
             <div id="color-legend"></div>
             <p>
-              Dot size represents the share of bright pixels. Color follows the selected metric.
+              Dot size represents the share of bright pixels. Color follows the selected metric. <br>
             </p>
           </div>
         </aside>
@@ -89,8 +79,8 @@
         <div>
           <h2 id="trend-title">Long-Term Trend</h2>
           <p>
-            The line view shows the same quarterly records in chronological order, helping separate
-            gradual change from seasonal movement.
+            The line view shows the same quarterly records in chronological order to help separate
+            gradual change from seasonal change.
           </p>
         </div>
       </div>
