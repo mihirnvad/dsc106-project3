@@ -217,11 +217,11 @@ input[type="range"] {
   border: 1px solid rgba(42, 58, 79, 0.8);
   border-radius: 8px;
   background: radial-gradient(circle at 50% 50%, #172437 0, #0b111b 68%);
-  overflow: hidden;
+  overflow: visible;
 }
 
 #chart {
-  min-height: 520px;
+  min-height: 660px;
 }
 
 #chart svg,
@@ -298,6 +298,24 @@ input[type="range"] {
   stroke-width: 1.2;
 }
 
+.quarter-wedge {
+  fill: #8ecae6;
+  opacity: 0.025;
+}
+
+.seasonal-pulse {
+  fill: rgba(142, 202, 230, 0.035);
+  stroke: #8ecae6;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.quarter-glow {
+  filter: blur(7px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .quarter-label,
 .year-label,
 .axis-label {
@@ -316,6 +334,43 @@ input[type="range"] {
 
 .quarter-dot {
   cursor: pointer;
+}
+
+.center-annotation {
+  pointer-events: none;
+}
+
+.center-title {
+  fill: #f5f7fb;
+  font-size: 22px;
+  font-weight: 850;
+}
+
+.center-line {
+  fill: #c8d4e3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mini-timeline-title {
+  fill: #d9e4f1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mini-timeline-base {
+  stroke: #34455d;
+  stroke-width: 1;
+}
+
+.mini-year-bar {
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 1;
+}
+
+.mini-year-label {
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .x-axis text,
