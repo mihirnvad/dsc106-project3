@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Urban Heartbeat</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+  <main>
+    <h1>Urban Heartbeat</h1>
+    <p>
+        Each dot represents a three-month seasonal average of nighttime light intensity. Use the slider to watch the yearly light pattern change over time.
+    </p>
+    <div class="controls">
+        <button id="play-button">Play</button>
+
+        <label for="year-slider">Year:</label>
+        <input id="year-slider" type="range" min="0" max="13" step="1" value="0" />
+
+        <span id="current-year">2013</span>
+    </div>
+
+    <div id="chart"></div>
+  </main>
+
+  <div id= 'tooltip'></div>
+  <script src="main.js"></script>
+</body>
+</html>

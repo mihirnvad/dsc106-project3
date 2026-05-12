@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #090914;
+  color: white;
+}
+
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+p {
+  color: #cfcfe6;
+}
+
+#chart {
+  margin-top: 24px;
+  background: radial-gradient(circle, #1b1b33, #090914 70%);
+  border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+svg {
+  display: block;
+}
+
+#tooltip {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(15, 15, 25, 0.96);
+  color: white;
+  border: 1px solid #555;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
+#year-slider {
+  width: 360px;
+}
+
+#current-year {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #ffd166;
+  min-width: 50px;
+}
+
+button {
+  background: #18182a;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #888;
+}
