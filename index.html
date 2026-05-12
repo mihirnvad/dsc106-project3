@@ -2,29 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Urban Heartbeat</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 </head>
 <body>
   <main>
-    <h1>Urban Heartbeat</h1>
-    <p>
-        Each dot represents a three-month seasonal average of nighttime light intensity. Use the slider to watch the yearly light pattern change over time.
-    </p>
-    <div class="controls">
-        <button id="play-button">Play</button>
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">United States' Urban Glow</h1>
+        <p class="intro">
+          Each dot represents a quarterly average of nighttime light intensity, built from monthly
+          samples and random daily image samples.
+        </p>
+      </div>
+      <dl class="stats" aria-label="Dataset summary">
+        <div>
+          <dt>Years</dt>
+          <dd id="stat-years">--</dd>
+        </div>
+        <div>
+          <dt>Quarters</dt>
+          <dd id="stat-quarters">--</dd>
+        </div>
+      </dl>
+    </section>
 
-        <label for="year-slider">Year:</label>
-        <input id="year-slider" type="range" min="0" max="13" step="1" value="0" />
+    <section class="panel" aria-labelledby="viz-title">
+      <div class="panel-header">
+        <div>
+          <h2 id="viz-title">Quarterly Light Pulse</h2>
+          <p>
+            Rings move outward by year. The selected year is emphasized while earlier years remain as
+            context and future years fade back.
+          </p>
+        </div>
+        <div class="controls" aria-label="Visualization controls">
+          <button id="play-button" type="button" aria-label="Play animation">Play</button>
+          <button id="show-all-button" type="button">Show all</button>
+          <label>
+            <span>Year</span>
+            <input id="year-slider" type="range" min="0" max="1" step="1" value="0" />
+          </label>
+          <output id="current-year" for="year-slider">2013</output>
+          <label>
+            <span>Color</span>
+            <select id="metric-select">
+              <option value="mean_brightness">Mean brightness</option>
+              <option value="bright_pixel_ratio">Bright pixel ratio</option>
+            </select>
+          </label>
+        </div>
+      </div>
 
-        <span id="current-year">2013</span>
-    </div>
+      <div class="viz-grid">
+        <div id="chart" aria-label="Radial visualization of quarterly nighttime light"></div>
+        <aside class="side-panel" aria-label="Selected year details">
+          <h3 id="selected-title">2013</h3>
+          <p id="darkest-quarter" class="darkest-note"></p>
+          <div id="season-list"></div>
+          <div class="legend">
+            <h3>Encoding</h3>
+            <div id="color-legend"></div>
+            <p>
+              Dot size represents the share of bright pixels. Color follows the selected metric.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
 
-    <div id="chart"></div>
+    <section class="panel" aria-labelledby="trend-title">
+      <div class="panel-header">
+        <div>
+          <h2 id="trend-title">Long-Term Trend</h2>
+          <p>
+            The line view shows the same quarterly records in chronological order, helping separate
+            gradual change from seasonal movement.
+          </p>
+        </div>
+      </div>
+      <div id="trend-chart" aria-label="Line chart of quarterly nighttime light"></div>
+    </section>
   </main>
 
-  <div id= 'tooltip'></div>
+  <div id="tooltip" role="status" aria-live="polite"></div>
   <script src="main.js"></script>
 </body>
 </html>

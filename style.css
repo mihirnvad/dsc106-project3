@@ -1,81 +1,425 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0f16;
+  --panel: #101923;
+  --panel-strong: #142132;
+  --ink: #f5f7fb;
+  --muted: #aab7c7;
+  --line: #2a3a4f;
+  --gold: #f4c95d;
+  --cyan: #8ecae6;
+  --coral: #ef7b68;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #090914;
-  color: white;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    linear-gradient(180deg, rgba(10, 15, 22, 0.9), var(--bg) 420px),
+    url("https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=VIIRS_SNPP_DayNightBand&STYLES=&FORMAT=image/jpeg&SRS=EPSG:4326&BBOX=-125,24,-66,50&WIDTH=1200&HEIGHT=620&TIME=2024-04-16");
+  background-size: cover, 100% auto;
+  background-repeat: no-repeat;
+  color: var(--ink);
 }
 
 main {
-  max-width: 1000px;
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 32px;
+  padding: 18px 0 48px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
 }
 
 h1 {
-  font-size: 2.5rem;
+  max-width: 780px;
+  margin-bottom: 10px;
+  font-size: clamp(2.35rem, 6vw, 4.8rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+h2 {
   margin-bottom: 8px;
+  font-size: 1.45rem;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin-bottom: 10px;
+  color: #dbe7f5;
+  font-size: 1rem;
 }
 
 p {
-  color: #cfcfe6;
+  color: var(--muted);
+  line-height: 1.65;
 }
 
-#chart {
-  margin-top: 24px;
-  background: radial-gradient(circle, #1b1b33, #090914 70%);
-  border-radius: 24px;
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 24px;
+  align-items: start;
+  padding: 8px 0 14px;
+}
+
+.eyebrow {
+  margin-bottom: 14px;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro {
+  max-width: 720px;
+  color: #e0e7ef;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.stats div,
+.panel,
+.writeup {
+  border: 1px solid rgba(142, 202, 230, 0.2);
+  background: rgba(16, 25, 35, 0.92);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+}
+
+.stats div {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.stats dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.stats dd {
+  margin: 5px 0 0;
+  color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.panel,
+.writeup {
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.panel-header {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 14px;
 }
 
-svg {
-  display: block;
-}
-
-#tooltip {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  background: rgba(15, 15, 25, 0.96);
-  color: white;
-  border: 1px solid #555;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+.panel-header p {
+  max-width: 680px;
+  margin-bottom: 0;
 }
 
 .controls {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  margin-top: 20px;
-  margin-bottom: 16px;
+  gap: 10px;
+  min-width: 460px;
 }
 
-#year-slider {
-  width: 360px;
-}
-
-#current-year {
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
   font-weight: 700;
-  font-size: 1.1rem;
-  color: #ffd166;
-  min-width: 50px;
+}
+
+button,
+select {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #192538;
+  color: var(--ink);
+  font: inherit;
 }
 
 button {
-  background: #18182a;
-  color: white;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font: inherit;
+  padding: 0 18px;
   cursor: pointer;
 }
 
-button:hover {
-  border-color: #888;
+button:hover,
+select:hover {
+  border-color: var(--cyan);
+}
+
+select {
+  padding: 0 12px;
+}
+
+input[type="range"] {
+  width: 220px;
+  accent-color: var(--gold);
+}
+
+#current-year {
+  min-width: 54px;
+  color: var(--gold);
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+.control-note {
+  flex-basis: 100%;
+  margin: -2px 0 0;
+  color: #d0d8e4;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 22px;
+  align-items: stretch;
+}
+
+#chart,
+#trend-chart {
+  min-height: 360px;
+  border: 1px solid rgba(42, 58, 79, 0.8);
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 50%, #172437 0, #0b111b 68%);
+  overflow: hidden;
+}
+
+#chart {
+  min-height: 520px;
+}
+
+#chart svg,
+#trend-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.side-panel {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0d1520;
+}
+
+#selected-title {
+  color: var(--gold);
+  font-size: 1.7rem;
+}
+
+.darkest-note {
+  margin: -2px 0 14px;
+  padding: 10px 11px;
+  border: 1px solid rgba(239, 123, 104, 0.35);
+  border-radius: 6px;
+  background: rgba(239, 123, 104, 0.08);
+  color: #f4d6d1;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+#season-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.season-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  padding: 11px 12px;
+  border-left: 3px solid var(--coral);
+  border-radius: 6px;
+  background: #142033;
+}
+
+.season-card.is-darkest {
+  border-left-color: var(--gold);
+  background: #19283c;
+}
+
+.season-name,
+.season-value {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.season-meta {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.legend p {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+
+.quarter-axis {
+  stroke: #3b526f;
+  stroke-dasharray: 5 7;
+  stroke-width: 1.2;
+}
+
+.quarter-label,
+.year-label,
+.axis-label {
+  fill: #b8c6d8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quarter-label {
+  fill: #d9e4f1;
+  paint-order: stroke;
+  stroke: #0b111b;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.quarter-dot {
+  cursor: pointer;
+}
+
+.x-axis text,
+.y-axis text,
+#color-legend text {
+  fill: #b8c6d8;
+  font-size: 12px;
+}
+
+#color-legend .legend-value {
+  fill: #7f8da0;
+  font-size: 10px;
+}
+
+.x-axis path,
+.x-axis line,
+.y-axis path,
+.y-axis line {
+  stroke: #34455d;
+}
+
+.writeup {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 0 28px;
+}
+
+.writeup h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 18px;
+}
+
+.writeup h3 {
+  margin-top: 4px;
+}
+
+.writeup p {
+  margin-bottom: 22px;
+}
+
+#tooltip {
+  position: absolute;
+  z-index: 20;
+  max-width: 280px;
+  opacity: 0;
+  pointer-events: none;
+  border: 1px solid rgba(142, 202, 230, 0.35);
+  border-radius: 8px;
+  background: rgba(5, 10, 16, 0.96);
+  color: var(--ink);
+  padding: 11px 13px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38);
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .viz-grid,
+  .writeup {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+    padding-top: 8px;
+  }
+
+  .panel-header {
+    display: block;
+  }
+
+  .controls {
+    justify-content: flex-start;
+    min-width: 0;
+    margin-top: 16px;
+  }
+
+  .control-note {
+    text-align: left;
+  }
+
+  .side-panel {
+    order: -1;
+  }
+}
+
+@media (max-width: 560px) {
+  main {
+    width: min(100% - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .panel,
+  .writeup {
+    padding: 16px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .controls label {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
