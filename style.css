@@ -148,6 +148,7 @@ p {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
+  max-width: 620px;
   min-width: 460px;
 }
 
@@ -254,6 +255,22 @@ input[type="range"] {
   line-height: 1.45;
 }
 
+.filter-note {
+  display: none;
+  margin: -4px 0 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(142, 202, 230, 0.28);
+  border-radius: 6px;
+  background: rgba(142, 202, 230, 0.08);
+  color: #d9e4f1;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.filter-note.is-visible {
+  display: block;
+}
+
 #season-list {
   display: grid;
   gap: 10px;
@@ -304,7 +321,7 @@ input[type="range"] {
 }
 
 .seasonal-pulse {
-  fill: rgba(142, 202, 230, 0.035);
+  fill: rgba(142, 202, 230, 0.018);
   stroke: #8ecae6;
   stroke-linejoin: round;
   pointer-events: none;
@@ -363,6 +380,21 @@ input[type="range"] {
   stroke-width: 1;
 }
 
+.mini-y-axis text {
+  fill: #8fa1b8;
+  font-size: 9px;
+}
+
+.mini-y-axis line {
+  stroke: transparent;
+}
+
+.mini-grid-line {
+  stroke: rgba(159, 176, 196, 0.18);
+  stroke-dasharray: 3 5;
+  stroke-width: 1;
+}
+
 .mini-year-bar {
   stroke: rgba(255, 255, 255, 0.22);
   stroke-width: 1;
@@ -383,6 +415,17 @@ input[type="range"] {
 #color-legend .legend-value {
   fill: #7f8da0;
   font-size: 10px;
+}
+
+#color-legend svg {
+  max-width: 100%;
+  overflow: visible;
+}
+
+#color-legend .legend-tick {
+  fill: #8fa1b8;
+  font-size: 10px;
+  font-weight: 650;
 }
 
 .x-axis path,

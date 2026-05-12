@@ -53,6 +53,16 @@
               <option value="bright_pixel_ratio">Bright pixel ratio</option>
             </select>
           </label>
+          <label>
+            <span>Quarter</span>
+            <select id="quarter-select">
+              <option value="all">All quarters</option>
+              <option value="1">Jan-Mar</option>
+              <option value="2">Apr-Jun</option>
+              <option value="3">Jul-Sep</option>
+              <option value="4">Oct-Dec</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -60,6 +70,7 @@
         <div id="chart" aria-label="Radial visualization of quarterly nighttime light"></div>
         <aside class="side-panel" aria-label="Selected year details">
           <h3 id="selected-title">2013</h3>
+          <p id="filter-note" class="filter-note"></p>
           <p id="darkest-quarter" class="darkest-note"></p>
           <div id="season-list"></div>
           <div class="legend">

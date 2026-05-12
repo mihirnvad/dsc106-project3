@@ -8,13 +8,25 @@ const quarterNames = new Map([
   [4, "Oct-Dec"],
 ]);
 
-const metricLabels = {
-  mean_brightness: "Mean brightness",
-  bright_pixel_ratio: "Bright pixel ratio",
+const metricConfig = {
+  mean_brightness: {
+    label: "Mean brightness",
+    format: d3.format(".3f"),
+    lowLabel: "Lower brightness",
+    highLabel: "Higher brightness",
+    colors: ["#2b164f", "#6a2f7f", "#b84e75", "#f18f55", "#ffe082"],
+  },
+  bright_pixel_ratio: {
+    label: "Bright pixel ratio",
+    format: d3.format(".1%"),
+    lowLabel: "Lower pixel ratio",
+    highLabel: "Higher pixel ratio",
+    colors: ["#173f5f", "#20639b", "#3caea3", "#a8d46f", "#f6d55c"],
+  },
 };
 
-const formatBrightness = d3.format(".3f");
-const formatPercent = d3.format(".1%");
+const formatBrightness = metricConfig.mean_brightness.format;
+const formatPercent = metricConfig.bright_pixel_ratio.format;
 const tooltip = d3.select("#tooltip");
 
 const svg = d3
@@ -47,12 +59,15 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
   const playButton = d3.select("#play-button");
   const showAllButton = d3.select("#show-all-button");
   const metricSelect = d3.select("#metric-select");
+  const quarterSelect = d3.select("#quarter-select");
 
   let selectedYear = years[0];
-  let selectedMetric = metricSelect.property("value");
+  let activeMetric = metricSelect.property("value");
+  let selectedQuarter = "all";
   let timer = null;
   let playing = false;
   let showingAllYears = false;
+  let currentMode = "all";
 
   d3.select("#stat-years").text(`${years[0]}-${years.at(-1)}`);
   d3.select("#stat-quarters").text(data.length);
@@ -61,33 +76,38 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
   yearSlider.attr("min", 0).attr("max", years.length - 1).property("value", 0);
   currentYearLabel.text(selectedYear);
 
-  const radiusScale = d3.scalePoint().domain(years).range([76, 300]);
+  const radiusScale = d3.scalePoint().domain(years).range([58, 326]);
   const sizeScale = d3
     .scaleSqrt()
     .domain(d3.extent(data, (d) => d.bright_pixel_ratio))
-    .range([5, 17]);
+    .range([4.5, 14]);
 
-  const colorScales = {
-    mean_brightness: d3
-      .scaleSequential(d3.interpolateMagma)
-      .domain(d3.extent(data, (d) => d.mean_brightness)),
-    bright_pixel_ratio: d3
-      .scaleSequential(d3.interpolateViridis)
-      .domain(d3.extent(data, (d) => d.bright_pixel_ratio)),
-  };
+  const colorScales = Object.fromEntries(
+    Object.entries(metricConfig).map(([metric, config]) => [
+      metric,
+      d3
+        .scaleQuantize()
+        .domain(d3.extent(data, (d) => d[metric]))
+        .range(config.colors),
+    ])
+  );
   const glowScale = d3
     .scaleSqrt()
     .domain(d3.extent(data, (d) => d.bright_pixel_ratio))
-    .range([14, 40]);
+    .range([11, 30]);
   const pulseData = years.map((year) => ({
     year,
     values: data.filter((d) => d.year === year).sort((a, b) => a.quarter - b.quarter),
   }));
-  const yearlyBrightness = years.map((year) => ({
+  const yearlyMetrics = years.map((year) => ({
     year,
     mean_brightness: d3.mean(
       data.filter((d) => d.year === year),
       (d) => d.mean_brightness
+    ),
+    bright_pixel_ratio: d3.mean(
+      data.filter((d) => d.year === year),
+      (d) => d.bright_pixel_ratio
     ),
   }));
   const pulseLine = d3
@@ -98,7 +118,7 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
   const guideArc = d3
     .arc()
     .innerRadius(50)
-    .outerRadius(336)
+    .outerRadius(358)
     .padAngle(0.08);
 
   radialLayer
@@ -136,8 +156,8 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     .attr("class", "quarter-axis")
     .attr("x1", (d) => Math.cos(angleForQuarter(d)) * 56)
     .attr("y1", (d) => Math.sin(angleForQuarter(d)) * 56)
-    .attr("x2", (d) => Math.cos(angleForQuarter(d)) * 338)
-    .attr("y2", (d) => Math.sin(angleForQuarter(d)) * 338);
+    .attr("x2", (d) => Math.cos(angleForQuarter(d)) * 360)
+    .attr("y2", (d) => Math.sin(angleForQuarter(d)) * 360);
 
   const pulsePaths = radialLayer
     .selectAll(".seasonal-pulse")
@@ -152,8 +172,8 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     .data([1, 2, 3, 4])
     .join("text")
     .attr("class", "quarter-label")
-    .attr("x", (d) => Math.cos(angleForQuarter(d)) * 352)
-    .attr("y", (d) => Math.sin(angleForQuarter(d)) * 352)
+    .attr("x", (d) => Math.cos(angleForQuarter(d)) * 376)
+    .attr("y", (d) => Math.sin(angleForQuarter(d)) * 376)
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .text((d) => quarterNames.get(d));
@@ -175,7 +195,7 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     .attr("cx", (d) => Math.cos(angleForQuarter(d.quarter)) * radiusScale(d.year))
     .attr("cy", (d) => Math.sin(angleForQuarter(d.quarter)) * radiusScale(d.year))
     .attr("r", (d) => glowScale(d.bright_pixel_ratio))
-    .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
+    .attr("fill", (d) => colorScales[activeMetric](d[activeMetric]))
     .attr("opacity", 0);
 
   const dots = radialLayer
@@ -186,7 +206,7 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     .attr("cx", (d) => Math.cos(angleForQuarter(d.quarter)) * radiusScale(d.year))
     .attr("cy", (d) => Math.sin(angleForQuarter(d.quarter)) * radiusScale(d.year))
     .attr("r", (d) => sizeScale(d.bright_pixel_ratio))
-    .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
+    .attr("fill", (d) => colorScales[activeMetric](d[activeMetric]))
     .attr("stroke", "#f8fafc")
     .attr("stroke-width", 1.3)
     .on("mouseenter", function (event, d) {
@@ -195,8 +215,8 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
         .style("opacity", 1)
         .html(`
           <strong>${d.label}</strong><br>
-          Mean brightness: ${formatBrightness(d.mean_brightness)}<br>
-          Bright pixel ratio: ${formatPercent(d.bright_pixel_ratio)}<br>
+          ${metricConfig[activeMetric].label}: ${formatMetric(d[activeMetric], activeMetric)}<br>
+          Dot size: ${formatPercent(d.bright_pixel_ratio)} bright-pixel share<br>
           Max brightness: ${formatBrightness(d.max_brightness)}
         `);
     })
@@ -218,8 +238,8 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
   centerAnnotation.append("text").attr("class", "center-line brightest").attr("text-anchor", "middle").attr("y", 10);
   centerAnnotation.append("text").attr("class", "center-line lowest").attr("text-anchor", "middle").attr("y", 30);
 
-  const miniTimeline = buildMiniTimeline(yearlyBrightness);
-  const trend = buildTrendChart(data, selectedMetric, colorScales[selectedMetric]);
+  const miniTimeline = buildMiniTimeline(yearlyMetrics);
+  const trend = buildTrendChart(data, activeMetric, colorScales[activeMetric]);
 
   yearSlider.on("input", function () {
     stopPlayback();
@@ -229,12 +249,18 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
   });
 
   metricSelect.on("change", function () {
-    selectedMetric = this.value;
+    activeMetric = this.value;
     if (showingAllYears) {
       showAllYears();
     } else {
       render();
     }
+  });
+
+  quarterSelect.on("change", function () {
+    selectedQuarter = this.value === "all" ? "all" : +this.value;
+    applyVisibility();
+    updateFilterNote();
   });
 
   playButton.on("click", () => {
@@ -243,14 +269,14 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
       return;
     }
 
-    showingAllYears = false;
+    if (currentMode === "all" || +yearSlider.property("value") >= years.length - 1) {
+      yearSlider.property("value", 0);
+      selectedYear = years[0];
+      render();
+    }
+
     playing = true;
     playButton.text("Pause").attr("aria-label", "Pause animation");
-
-    if (+yearSlider.property("value") >= years.length - 1) {
-      finishPlayback();
-      return;
-    }
 
     timer = d3.interval(() => {
       const currentIndex = +yearSlider.property("value");
@@ -273,44 +299,29 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     showAllYears();
   });
 
-  render();
+  yearSlider.property("value", years.length - 1);
+  showAllYears();
 
   function render() {
     showingAllYears = false;
+    currentMode = "year";
     currentYearLabel.text(selectedYear);
     d3.select("#selected-title").text(selectedYear);
 
     dots
       .transition()
       .duration(260)
-      .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
-      .attr("opacity", (d) => {
-        if (d.year === selectedYear) return 1;
-        if (d.year < selectedYear) return 0.26;
-        return 0.06;
-      })
       .attr("stroke", (d) => (d.year === selectedYear ? "#ffffff" : "#6b7280"));
 
     glows
       .transition()
       .duration(260)
-      .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
-      .attr("r", (d) => glowScale(d.bright_pixel_ratio))
-      .attr("opacity", (d) => {
-        if (d.year === selectedYear) return 0.28;
-        if (d.year < selectedYear) return 0.1;
-        return 0.02;
-      });
+      .attr("r", (d) => glowScale(d.bright_pixel_ratio));
 
     pulsePaths
       .transition()
       .duration(260)
-      .attr("opacity", (d) => {
-        if (d.year === selectedYear) return 0.9;
-        if (d.year < selectedYear) return 0.16;
-        return 0.015;
-      })
-      .attr("stroke-width", (d) => (d.year === selectedYear ? 3.2 : 1.1))
+      .attr("stroke-width", (d) => (d.year === selectedYear ? 2 : 0.7))
       .attr("stroke", (d) => (d.year === selectedYear ? "#f4c95d" : "#8ecae6"));
 
     radialLayer
@@ -323,16 +334,19 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
         d === selectedYear ? "drop-shadow(0 0 7px rgba(244, 201, 93, 0.8))" : null
       );
 
-    updateSeasonList(data.filter((d) => d.year === selectedYear), selectedMetric, false);
-    updateBrightnessSummary(data.filter((d) => d.year === selectedYear), selectedMetric);
-    updateCenterAnnotation(centerAnnotation, data.filter((d) => d.year === selectedYear), selectedMetric, selectedYear);
-    miniTimeline.update(selectedYear, false);
-    updateLegend(colorScales[selectedMetric], metricLabels[selectedMetric], selectedMetric);
-    trend.update(selectedYear, selectedMetric, colorScales[selectedMetric], false);
+    updateSeasonList(data.filter((d) => d.year === selectedYear), activeMetric, false);
+    updateBrightnessSummary(data.filter((d) => d.year === selectedYear), activeMetric);
+    updateCenterAnnotation(centerAnnotation, data.filter((d) => d.year === selectedYear), activeMetric, selectedYear);
+    miniTimeline.update(selectedYear, activeMetric, false);
+    updateLegend(colorScales[activeMetric], activeMetric);
+    trend.update(selectedYear, activeMetric, colorScales[activeMetric], false);
+    applyVisibility();
+    updateFilterNote();
   }
 
   function showAllYears() {
     showingAllYears = true;
+    currentMode = "all";
     selectedYear = years.at(-1);
     currentYearLabel.text(selectedYear);
     d3.select("#selected-title").text("All years");
@@ -340,23 +354,18 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
     dots
       .transition()
       .duration(320)
-      .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
-      .attr("opacity", 0.92)
       .attr("stroke", "#f8fafc")
       .attr("stroke-width", 1.15);
 
     glows
       .transition()
       .duration(320)
-      .attr("fill", (d) => colorScales[selectedMetric](d[selectedMetric]))
-      .attr("r", (d) => glowScale(d.bright_pixel_ratio))
-      .attr("opacity", 0.18);
+      .attr("r", (d) => glowScale(d.bright_pixel_ratio));
 
     pulsePaths
       .transition()
       .duration(320)
-      .attr("opacity", 0.22)
-      .attr("stroke-width", 1.25)
+      .attr("stroke-width", 0.75)
       .attr("stroke", "#8ecae6");
 
     radialLayer
@@ -367,12 +376,14 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
       .attr("stroke-width", (d) => (d === years.at(-1) ? 2.2 : 1))
       .style("filter", null);
 
-    updateSeasonList(getQuarterAverages(data), selectedMetric, true);
-    updateBrightnessSummary(data, "mean_brightness", true);
-    updateCenterAnnotation(centerAnnotation, data, selectedMetric, "All years", true);
-    miniTimeline.update(selectedYear, true);
-    updateLegend(colorScales[selectedMetric], metricLabels[selectedMetric], selectedMetric);
-    trend.update(selectedYear, selectedMetric, colorScales[selectedMetric], true);
+    updateSeasonList(getQuarterAverages(data), activeMetric, true);
+    updateBrightnessSummary(data, activeMetric, true);
+    updateCenterAnnotation(centerAnnotation, data, activeMetric, "All years", true);
+    miniTimeline.update(selectedYear, activeMetric, true);
+    updateLegend(colorScales[activeMetric], activeMetric);
+    trend.update(selectedYear, activeMetric, colorScales[activeMetric], true);
+    applyVisibility();
+    updateFilterNote();
   }
 
   function stopPlayback() {
@@ -391,6 +402,75 @@ d3.csv("data/light_Data.csv", d3.autoType).then((data) => {
 
   function angleForQuarter(quarter) {
     return ((quarter - 1) * Math.PI) / 2 - Math.PI / 2;
+  }
+
+  function applyVisibility() {
+    dots
+      .transition()
+      .duration(220)
+      .attr("fill", (d) => colorScales[activeMetric](d[activeMetric]))
+      .attr("opacity", (d) => dotOpacity(d));
+
+    glows
+      .transition()
+      .duration(220)
+      .attr("fill", (d) => colorScales[activeMetric](d[activeMetric]))
+      .attr("opacity", (d) => glowOpacity(d));
+
+    pulsePaths
+      .transition()
+      .duration(220)
+      .attr("opacity", (d) => pulseOpacity(d));
+
+    radialLayer
+      .selectAll(".year-ring")
+      .transition()
+      .duration(220)
+      .attr("opacity", (d) => ringOpacity(d));
+
+    radialLayer
+      .selectAll(".quarter-wedge")
+      .transition()
+      .duration(220)
+      .attr("opacity", (d) => (selectedQuarter === "all" || d === selectedQuarter ? 0.05 : 0.012));
+  }
+
+  function dotOpacity(d) {
+    const base = currentMode === "all" ? 0.92 : d.year === selectedYear ? 1 : d.year < selectedYear ? 0.26 : 0.06;
+    return quarterMatches(d) ? base : Math.min(base, 0.08);
+  }
+
+  function glowOpacity(d) {
+    const base = currentMode === "all" ? 0.18 : d.year === selectedYear ? 0.28 : d.year < selectedYear ? 0.1 : 0.02;
+    return quarterMatches(d) ? base : Math.min(base, 0.015);
+  }
+
+  function pulseOpacity(d) {
+    const base = currentMode === "all" ? 0.08 : d.year === selectedYear ? 0.34 : d.year < selectedYear ? 0.055 : 0.006;
+    return selectedQuarter === "all" ? base : base * 0.35;
+  }
+
+  function ringOpacity(year) {
+    if (currentMode === "all") return selectedQuarter === "all" ? 0.42 : 0.3;
+    if (year === selectedYear) return selectedQuarter === "all" ? 0.9 : 0.7;
+    if (year < selectedYear) return 0.24;
+    return 0.06;
+  }
+
+  function quarterMatches(d) {
+    return selectedQuarter === "all" || d.quarter === selectedQuarter;
+  }
+
+  function updateFilterNote() {
+    const note = d3.select("#filter-note");
+    if (selectedQuarter === "all") {
+      note.text("").classed("is-visible", false);
+      return;
+    }
+
+    const quarterLabel = quarterNames.get(selectedQuarter);
+    const context = currentMode === "all" ? "across all years" : `in ${selectedYear}`;
+    note.text(`Showing ${quarterLabel} ${context}.`).classed("is-visible", true);
   }
 });
 
@@ -435,23 +515,24 @@ function getQuarterAverages(rows) {
 function buildMiniTimeline(rows) {
   const timelineWidth = width - 192;
   const timelineHeight = 44;
+  const axisWidth = 42;
   const xScale = d3
     .scaleBand()
     .domain(rows.map((d) => d.year))
-    .range([0, timelineWidth])
+    .range([axisWidth, timelineWidth])
     .padding(0.28);
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(rows, (d) => d.mean_brightness))
-    .nice()
     .range([timelineHeight, 0]);
 
-  timelineLayer.append("text").attr("class", "mini-timeline-title").attr("x", 0).attr("y", -12).text("Average brightness by year");
+  const title = timelineLayer.append("text").attr("class", "mini-timeline-title").attr("x", 0).attr("y", -12);
+  const yAxis = timelineLayer.append("g").attr("class", "mini-y-axis").attr("transform", `translate(${axisWidth - 8}, 0)`);
+  const grid = timelineLayer.append("g").attr("class", "mini-grid");
 
   timelineLayer
     .append("line")
     .attr("class", "mini-timeline-base")
-    .attr("x1", 0)
+    .attr("x1", axisWidth)
     .attr("x2", timelineWidth)
     .attr("y1", timelineHeight)
     .attr("y2", timelineHeight);
@@ -462,9 +543,7 @@ function buildMiniTimeline(rows) {
     .join("rect")
     .attr("class", "mini-year-bar")
     .attr("x", (d) => xScale(d.year))
-    .attr("y", (d) => yScale(d.mean_brightness))
     .attr("width", xScale.bandwidth())
-    .attr("height", (d) => timelineHeight - yScale(d.mean_brightness))
     .attr("rx", 3);
 
   const labels = timelineLayer
@@ -477,10 +556,44 @@ function buildMiniTimeline(rows) {
     .attr("text-anchor", "middle")
     .text((d) => d.year);
 
-  function update(selectedYear, showAll = false) {
+  function update(selectedYear, metric = "mean_brightness", showAll = false) {
+    yScale.domain(d3.extent(rows, (d) => d[metric])).nice();
+    title.text(`${metricConfig[metric].label} by year`);
+
+    yAxis
+      .transition()
+      .duration(240)
+      .call(d3.axisLeft(yScale).ticks(3).tickFormat(metricConfig[metric].format).tickSize(0));
+
+    yAxis.select(".domain").remove();
+
+    grid
+      .selectAll(".mini-grid-line")
+      .data(yScale.ticks(3), (d) => d)
+      .join(
+        (enter) =>
+          enter
+            .append("line")
+            .attr("class", "mini-grid-line")
+            .attr("x1", axisWidth)
+            .attr("x2", timelineWidth)
+            .attr("y1", (d) => yScale(d))
+            .attr("y2", (d) => yScale(d)),
+        (update) => update,
+        (exit) => exit.remove()
+      )
+      .transition()
+      .duration(240)
+      .attr("x1", axisWidth)
+      .attr("x2", timelineWidth)
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d));
+
     bars
       .transition()
       .duration(240)
+      .attr("y", (d) => yScale(d[metric]))
+      .attr("height", (d) => timelineHeight - yScale(d[metric]))
       .attr("fill", (d) => (showAll ? "#8ecae6" : d.year === selectedYear ? "#f4c95d" : "#4d6685"))
       .attr("opacity", (d) => (showAll || d.year <= selectedYear ? 0.95 : 0.25));
 
@@ -491,12 +604,12 @@ function buildMiniTimeline(rows) {
       .attr("fill", (d) => (!showAll && d.year === selectedYear ? "#f4c95d" : "#9fb0c4"));
   }
 
-  update(rows[0].year, false);
+  update(rows[0].year, "mean_brightness", false);
   return { update };
 }
 
 function updateSeasonList(rows, metric, isAggregate = false) {
-  const valueMetric = isAggregate ? "mean_brightness" : metric;
+  const valueMetric = metric;
   const darkest = d3.least(rows, (d) => d[valueMetric]);
   const cards = d3
     .select("#season-list")
@@ -534,79 +647,77 @@ function updateBrightnessSummary(rows, metric, allYears = false) {
   const lowest = d3.least(rows, (d) => d[metric]);
   const highest = d3.greatest(rows, (d) => d[metric]);
   if (!lowest || !highest) return;
+  const metricName = metricConfig[metric].label.toLowerCase();
 
   if (allYears) {
     d3.select("#darkest-quarter").html(`
-      <strong>Lowest brightness overall:</strong> ${lowest.quarter_label} ${lowest.year} (${formatMetric(lowest[metric], metric)})<br>
-      <strong>Highest brightness overall:</strong> ${highest.quarter_label} ${highest.year} (${formatMetric(highest[metric], metric)})
+      <strong>Lowest ${metricName} overall:</strong> ${lowest.quarter_label} ${lowest.year} (${formatMetric(lowest[metric], metric)})<br>
+      <strong>Highest ${metricName} overall:</strong> ${highest.quarter_label} ${highest.year} (${formatMetric(highest[metric], metric)})
     `);
     return;
   }
 
   d3.select("#darkest-quarter").html(
-    `<strong>Lowest brightness:</strong> ${lowest.quarter_label} (${formatMetric(lowest[metric], metric)})<br>
-     <strong>Highest brightness:</strong> ${highest.quarter_label} (${formatMetric(highest[metric], metric)})`
+    `<strong>Lowest ${metricName}:</strong> ${lowest.quarter_label} (${formatMetric(lowest[metric], metric)})<br>
+     <strong>Highest ${metricName}:</strong> ${highest.quarter_label} (${formatMetric(highest[metric], metric)})`
   );
 }
 
-function updateLegend(scale, label, metric) {
-  const legendWidth = 210;
-  const legendHeight = 12;
-  const id = `legend-gradient-${metric}`;
-  const [min, max] = scale.domain();
+function updateLegend(scale, metric) {
+  const legendWidth = 260;
+  const swatchHeight = 12;
+  const swatchGap = 4;
+  const config = metricConfig[metric];
+  const colors = scale.range();
+  const [domainMin, domainMax] = scale.domain();
+  const tickValues = [domainMin, ...scale.thresholds(), domainMax];
+  const swatchWidth = (legendWidth - swatchGap * (colors.length - 1)) / colors.length;
+  const boundaryScale = d3.scaleLinear().domain([domainMin, domainMax]).range([0, legendWidth]);
 
   const legend = d3.select("#color-legend").html("");
   const svgLegend = legend
     .append("svg")
-    .attr("viewBox", [0, 0, legendWidth, 54])
-    .attr("aria-label", `${label} color scale`);
-
-  const defs = svgLegend.append("defs");
-  const gradient = defs.append("linearGradient").attr("id", id);
-
-  d3.range(0, 1.01, 0.1).forEach((t) => {
-    gradient
-      .append("stop")
-      .attr("offset", `${t * 100}%`)
-      .attr("stop-color", scale(min + t * (max - min)));
-  });
+    .attr("viewBox", [0, 0, legendWidth, 78])
+    .attr("aria-label", `${config.label} color scale`);
 
   svgLegend
-    .append("rect")
-    .attr("x", 0)
+    .selectAll(".legend-swatch")
+    .data(colors)
+    .join("rect")
+    .attr("class", "legend-swatch")
+    .attr("x", (_, i) => i * (swatchWidth + swatchGap))
     .attr("y", 10)
-    .attr("width", legendWidth)
-    .attr("height", legendHeight)
-    .attr("rx", 6)
-    .attr("fill", `url(#${id})`);
+    .attr("width", swatchWidth)
+    .attr("height", swatchHeight)
+    .attr("rx", 3)
+    .attr("fill", (d) => d);
 
   svgLegend
     .append("text")
     .attr("x", 0)
     .attr("y", 42)
-    .text("Lower brightness");
-
-  svgLegend
-    .append("text")
-    .attr("x", 0)
-    .attr("y", 53)
-    .attr("class", "legend-value")
-    .text(formatMetric(min, metric));
+    .text(config.lowLabel);
 
   svgLegend
     .append("text")
     .attr("x", legendWidth)
     .attr("y", 42)
     .attr("text-anchor", "end")
-    .text("Higher brightness");
+    .text(config.highLabel);
 
   svgLegend
-    .append("text")
-    .attr("x", legendWidth)
-    .attr("y", 53)
-    .attr("class", "legend-value")
-    .attr("text-anchor", "end")
-    .text(formatMetric(max, metric));
+    .selectAll(".legend-tick")
+    .data(tickValues)
+    .join("text")
+    .attr("class", "legend-tick")
+    .attr("x", (d) => boundaryScale(d))
+    .attr("y", 68)
+    .attr("text-anchor", (d, i) => {
+      if (i === 0) return "start";
+      if (i === tickValues.length - 1) return "end";
+      return "middle";
+    })
+    .text((d) => formatMetric(d, metric));
 }
 
 function buildTrendChart(data, metric, colorScale) {
@@ -645,7 +756,7 @@ function buildTrendChart(data, metric, colorScale) {
       .duration(220)
       .call(d3.axisLeft(yScale).ticks(5));
 
-    chart.select(".y-label").text(metricLabels[selectedMetric]);
+    chart.select(".y-label").text(metricConfig[selectedMetric].label);
 
     chart
       .select(".trend-line")
@@ -674,7 +785,7 @@ function buildTrendChart(data, metric, colorScale) {
 }
 
 function formatMetric(value, metric) {
-  return metric === "bright_pixel_ratio" ? formatPercent(value) : formatBrightness(value);
+  return metricConfig[metric].format(value);
 }
 
 // test for commit change
